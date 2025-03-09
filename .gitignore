@@ -1,0 +1,71 @@
+# Gradle
+.gradle/
+**/build/
+\!src/**/build/
+\!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.kotlin/
+
+# Android Studio
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Xcode
+xcuserdata/
+*.xcodeproj/*
+\!*.xcodeproj/project.pbxproj
+\!*.xcodeproj/xcshareddata/
+\!*.xcodeproj/project.xcworkspace/
+\!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.pbxuser
+\!default.pbxuser
+*.mode1v3
+\!default.mode1v3
+*.mode2v3
+\!default.mode2v3
+*.perspectivev3
+\!default.perspectivev3
+
+# macOS
+.DS_Store
+
+# Fleet
+.fleet/
+
+# Generated files
+bin/
+gen/
+
+# Log Files
+*.log
+
+# Package Files
+*.jar
+\!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Kotlin/Native
+*.kexe
+*.dSYM
+konan/
+
+# Temporary files
+tmp/
+temp/
