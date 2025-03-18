@@ -46,5 +46,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- WiFi Hotspot Configuration Permission -->
+	<key>NSHotspotConfigurationDescription</key>
+	<string>Connect to WiFi networks for testing Flack library</string>
+	<!-- Location Permission (needed for WiFi scanning) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used for WiFi scanning and connection</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location is required for WiFi scanning and connection</string>
 </dict>
 </plist>

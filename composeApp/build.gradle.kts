@@ -39,6 +39,9 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            
+            // Lifecycle and ViewModel
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
         }
@@ -51,7 +54,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.mjstokely.flackexample"
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = 30 // Match the flack library's minSdk
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
