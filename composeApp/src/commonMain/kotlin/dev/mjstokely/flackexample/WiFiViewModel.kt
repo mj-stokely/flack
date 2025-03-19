@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
  * ViewModel for managing WiFi connections using the Flack library.
  */
 class WiFiViewModel : ViewModel() {
-    // Use platform-specific Flack instance creation
-    private val flack = Flack()
+
+    private val flack = Flack.create()
     
     private val _uiState = MutableStateFlow(WiFiUIState())
     val uiState: StateFlow<WiFiUIState> = _uiState.asStateFlow()

@@ -30,11 +30,6 @@ dependencies {
 ### Initialization
 
 ```kotlin
-// Android
-val context: Context = ...
-val flack = Flack.create(context)
-
-// iOS
 val flack = Flack.create()
 ```
 
