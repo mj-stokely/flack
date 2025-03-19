@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
@@ -37,6 +38,9 @@ internal class AndroidFlackConnection(private val context: Context) : FlackConne
     private var currentNetwork: Network? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
+    @Volatile
+    private var currentWifiInfo: WifiInfo? = null
+
     init {
         startMonitoringWifiStatus()
     }
@@ -59,13 +63,17 @@ internal class AndroidFlackConnection(private val context: Context) : FlackConne
 
             override fun onLost(network: Network) {
                 if (network == currentNetwork) {
+                    updateConnectionStatus(network, false)
                     currentNetwork = null
-                    _connectionStatus.value = ConnectionStatus(isConnected = false)
                 }
             }
 
             override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
                 if (network == currentNetwork) {
+                    // For API 31+, get WifiInfo from NetworkCapabilities
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        currentWifiInfo = capabilities.transportInfo as? WifiInfo
+                    }
                     updateConnectionStatus(network, true)
                 }
             }
@@ -93,6 +101,9 @@ internal class AndroidFlackConnection(private val context: Context) : FlackConne
         val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return
         
         if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                currentWifiInfo = capabilities.transportInfo as? WifiInfo
+            }
             updateConnectionStatus(activeNetwork, true)
         } else {
             _connectionStatus.value = ConnectionStatus(isConnected = false)
@@ -132,17 +143,32 @@ internal class AndroidFlackConnection(private val context: Context) : FlackConne
      * @return The SSID of the connected network, or null if not connected or unable to determine.
      */
     private fun getConnectedWifiSsid(): String? {
-        if (wifiManager == null) return null
-        
-        val connectionInfo = wifiManager.connectionInfo ?: return null
-        var ssid = connectionInfo.ssid
-        
-        // WifiManager returns SSIDs wrapped in double quotes
-        if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
-            ssid = ssid.substring(1, ssid.length - 1)
+        // For API 31+, get SSID from stored WifiInfo
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val wifiInfo = currentWifiInfo ?: return null
+            var ssid = wifiInfo.ssid
+            
+            // WifiInfo returns SSIDs wrapped in double quotes
+            if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
+                ssid = ssid.substring(1, ssid.length - 1)
+            }
+            
+            return if (ssid == "<unknown ssid>") null else ssid
+        } else {
+            // For older APIs, use the legacy method
+            if (wifiManager == null) return null
+            
+            @Suppress("DEPRECATION")
+            val connectionInfo = wifiManager.connectionInfo ?: return null
+            var ssid = connectionInfo.ssid
+            
+            // WifiManager returns SSIDs wrapped in double quotes
+            if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
+                ssid = ssid.substring(1, ssid.length - 1)
+            }
+            
+            return if (ssid == "<unknown ssid>") null else ssid
         }
-        
-        return if (ssid == "<unknown ssid>") null else ssid
     }
 
     /**
@@ -151,10 +177,17 @@ internal class AndroidFlackConnection(private val context: Context) : FlackConne
      * @return The signal strength as a percentage (0-100), or null if not available.
      */
     private fun getSignalStrength(): Int? {
-        if (wifiManager == null) return null
-        
-        val connectionInfo = wifiManager.connectionInfo ?: return null
-        val rssi = connectionInfo.rssi
+        // Get RSSI value based on API level
+        val rssi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // For API 31+, get RSSI from stored WifiInfo
+            currentWifiInfo?.rssi
+        } else {
+            // For older APIs, use the legacy method
+            if (wifiManager == null) return null
+            @Suppress("DEPRECATION")
+            val connectionInfo = wifiManager.connectionInfo ?: return null
+            connectionInfo.rssi
+        } ?: return null
         
         // Convert RSSI to percentage
         return if (rssi <= -100) {
